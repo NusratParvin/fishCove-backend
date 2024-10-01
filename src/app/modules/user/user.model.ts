@@ -6,9 +6,6 @@ import config from '../../config';
 
 const userSchema = new Schema<TUser, UserModel>(
   {
-    // _id: {
-    //   type: String,
-    // },
     name: {
       type: String,
       required: true,
@@ -21,6 +18,7 @@ const userSchema = new Schema<TUser, UserModel>(
     password: {
       type: String,
       required: true,
+      minlength: 6,
     },
     phone: {
       type: String,
@@ -28,13 +26,23 @@ const userSchema = new Schema<TUser, UserModel>(
     },
     address: {
       type: String,
-      required: true,
+      required: false,
     },
     role: {
       type: String,
       required: true,
       enum: Object.values(USER_ROLE),
+      default: 'user',
     },
+    profilePhoto: {
+      type: String,
+      required: false,
+    },
+    terms: {
+      type: Boolean,
+      required: false,
+    },
+    //   track password change times
     // passwordChangedAt: {
     //   type: Date,
     // },
