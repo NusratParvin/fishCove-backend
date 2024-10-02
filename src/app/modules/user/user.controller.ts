@@ -5,7 +5,7 @@ import { UserServices } from './user.service';
 
 const getUser = catchAsync(async (req, res) => {
   const { id } = req.user;
-
+  console.log(id);
   const result = await UserServices.getUserFromDB(id);
 
   sendResponse(res, {
@@ -45,7 +45,6 @@ const getAllUsers = catchAsync(async (req, res) => {
 
 const deleteUser = catchAsync(async (req, res) => {
   const { id } = req.params;
-  console.log(id, 'i');
 
   const deletedUser = await UserServices.deleteUserFromDB(id);
 

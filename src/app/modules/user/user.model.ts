@@ -20,6 +20,7 @@ const userSchema = new Schema<TUser, UserModel>(
       required: true,
       minlength: 6,
     },
+
     phone: {
       type: String,
       required: true,
@@ -32,7 +33,7 @@ const userSchema = new Schema<TUser, UserModel>(
       type: String,
       required: true,
       enum: Object.values(USER_ROLE),
-      default: 'user',
+      default: 'USER',
     },
     profilePhoto: {
       type: String,
@@ -84,5 +85,14 @@ userSchema.set('toJSON', {
     return ret;
   },
 });
+
+userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
+  passwordChangedTimestamp: Date,
+  jwtIssuedTimestamp: number,
+) {
+  const passwordChangedTime =
+    new Date(passwordChangedTimestamp).getTime() / 1000;
+  return passwordChangedTime > jwtIssuedTimestamp;
+};
 
 export const User = model<TUser, UserModel>('user', userSchema);

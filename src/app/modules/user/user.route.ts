@@ -9,20 +9,20 @@ const router = express.Router();
 
 router.get(
   '/me',
-  auth(USER_ROLE.admin, USER_ROLE.user),
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   UserControllers.getUser,
 );
 router.put(
   '/me',
-  auth(USER_ROLE.admin, USER_ROLE.user),
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   zodValidationRequest(userValidation.updateUserSchema),
   UserControllers.updateUserProfile,
 );
 
-router.get('/', auth(USER_ROLE.admin), UserControllers.getAllUsers);
+router.get('/', auth(USER_ROLE.ADMIN), UserControllers.getAllUsers);
 
-router.delete('/:id', auth(USER_ROLE.admin), UserControllers.deleteUser);
+router.delete('/:id', auth(USER_ROLE.ADMIN), UserControllers.deleteUser);
 
-router.put('/:id', auth(USER_ROLE.admin), UserControllers.updateUserRole);
+router.put('/:id', auth(USER_ROLE.ADMIN), UserControllers.updateUserRole);
 
 export const UserRoutes = router;

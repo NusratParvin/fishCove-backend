@@ -23,13 +23,14 @@ router.post(
 
 router.post(
   '/forget-password',
+  // auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   zodValidationRequest(AuthValidation.forgetPasswordValidationSchema),
   AuthControllers.forgetPassword,
 );
 
 router.post(
   '/change-password',
-  auth(USER_ROLE.admin, USER_ROLE.user),
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   zodValidationRequest(AuthValidation.changePasswordValidationSchema),
   AuthControllers.changePassword,
 );
@@ -42,7 +43,8 @@ router.post(
 
 router.post(
   '/reset-password',
-  zodValidationRequest(AuthValidation.forgetPasswordValidationSchema),
+  // auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  zodValidationRequest(AuthValidation.resetPasswordValidationSchema),
   AuthControllers.resetPassword,
 );
 

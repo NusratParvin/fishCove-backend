@@ -25,22 +25,26 @@ const login = catchAsync(async (req, res) => {
     httpOnly: true,
     secure: config.NODE_ENV === 'production',
   });
-
-  const loggedInUser = {
-    _id: userExists._id,
-    name: userExists.name,
-    email: userExists.email,
-    phone: userExists.phone,
-    address: userExists.address,
-    role: userExists.role,
-  };
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: config.NODE_ENV === 'production',
+  });
+  // console.log(userExists);
+  // const loggedInUser = {
+  //   _id: userExists._id,
+  //   name: userExists.name,
+  //   email: userExists.email,
+  //   phone: userExists.phone,
+  //   address: userExists.address,
+  //   role: userExists.role,
+  // };
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'User logged in successfully',
     token: accessToken,
-    data: loggedInUser,
+    data: userExists,
   });
 });
 
@@ -57,8 +61,9 @@ const changePassword = catchAsync(async (req, res) => {
 });
 
 const forgetPassword = catchAsync(async (req, res) => {
-  const userId = req.body.id;
-  const result = await AuthServices.forgetPassword(userId);
+  const userEmail = req.body.email;
+  // console.log(userEmail);
+  const result = await AuthServices.forgetPassword(userEmail);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -68,17 +73,23 @@ const forgetPassword = catchAsync(async (req, res) => {
 });
 
 const resetPassword = catchAsync(async (req, res) => {
-  const token = req.headers.authorization;
+  // const token = req.headers.Authorization;
+  // const token = req.body.token;
+
+  const token = req.headers.authorization?.split(' ')[1]; // Split 'Bearer <token>'
+
+  console.log(req.body, 'Request Body');
 
   if (!token) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Something went wrong !');
+    throw new AppError(httpStatus.BAD_REQUEST, 'Token missing or invalid!');
   }
 
   const result = await AuthServices.resetPassword(req.body, token);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Password reset succesfully!',
+    message: 'Password reset successfully!',
     data: result,
   });
 });

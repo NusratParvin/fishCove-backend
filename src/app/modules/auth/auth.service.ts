@@ -31,8 +31,8 @@ const login = async (payload: TLoginUser) => {
   }
 
   const isPasswordMatched = await User.isPasswordMatched(
-    payload.password,
-    userExists.password,
+    payload?.password,
+    userExists?.password,
   );
 
   if (!isPasswordMatched) {
@@ -150,9 +150,8 @@ const changePassword = async (
 //   };
 // };
 
-const forgetPassword = async (userId: string) => {
-  const user = await User.isUserExistsById(userId);
-
+const forgetPassword = async (userEmail: string) => {
+  const user = await User.findOne({ email: userEmail });
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
   }
@@ -169,19 +168,18 @@ const forgetPassword = async (userId: string) => {
     '10m',
   );
 
-  const resetUILink = `${config.reset_pass_ui_link}?id=${user.id}&token=${resetToken} `;
+  const resetUILink = `${config.reset_pass_ui_link}/reset-password?id=${user.id}&token=${resetToken} `;
 
   sendEmail(user.email, resetUILink);
-
-  console.log(resetUILink);
 };
 
 const resetPassword = async (
   payload: { id: string; newPassword: string },
   token: string,
 ) => {
+  // console.log(payload, token);
   const user = await User.isUserExistsById(payload?.id);
-
+  // console.log(user);
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
   }
@@ -191,26 +189,37 @@ const resetPassword = async (
     config.jwt_access_secret as string,
   ) as JwtPayload;
 
-  if (payload.id !== decoded.userId) {
-    throw new AppError(httpStatus.FORBIDDEN, 'You are forbidden!');
+  if (payload.id !== decoded.id) {
+    console.log(payload.id, decoded.id);
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You are forbidden from resetting this password!',
+    );
   }
-
+  console.log(payload.newPassword, 'payload.newPassword');
   const newHashedPassword = await bcrypt.hash(
     payload.newPassword,
     Number(config.bcrypt_salt_rounds),
   );
+  console.log(newHashedPassword, 'payload.newPassword');
 
-  await User.findOneAndUpdate(
-    {
-      id: decoded.userId,
-      role: decoded.role,
-    },
+  const updatedUser = await User.findByIdAndUpdate(
+    decoded.id,
     {
       password: newHashedPassword,
-      needsPasswordChange: false,
       passwordChangedAt: new Date(),
     },
+    { new: true },
   );
+
+  if (!updatedUser) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to update the password!',
+    );
+  }
+
+  return updatedUser;
 };
 
 export const AuthServices = {
