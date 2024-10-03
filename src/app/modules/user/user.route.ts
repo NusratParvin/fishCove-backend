@@ -25,4 +25,10 @@ router.delete('/:id', auth(USER_ROLE.ADMIN), UserControllers.deleteUser);
 
 router.put('/:id', auth(USER_ROLE.ADMIN), UserControllers.updateUserRole);
 
+router.patch(
+  '/:id/follow',
+  auth(USER_ROLE.USER, USER_ROLE.ADMIN),
+  UserControllers.followUser,
+);
+
 export const UserRoutes = router;

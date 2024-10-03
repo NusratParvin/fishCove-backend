@@ -16,7 +16,7 @@ const getAllArticlesFromDB = async () => {
   // const result = await Article.find();
   const result = await Article.find().populate({
     path: 'authorId',
-    select: 'name profilePhoto',
+    select: 'name profilePhoto followers',
   });
   return result;
 };

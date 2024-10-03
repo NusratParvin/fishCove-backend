@@ -69,10 +69,25 @@ const updateUserRole = catchAsync(async (req, res) => {
   });
 });
 
+const followUser = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const followUserId = req.params.id;
+  console.log(followUserId);
+
+  const result = await UserServices.followUserIntoDB(userId, followUserId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result.message,
+  });
+});
+
 export const UserControllers = {
   getUser,
   updateUserProfile,
   getAllUsers,
   deleteUser,
   updateUserRole,
+  followUser,
 };

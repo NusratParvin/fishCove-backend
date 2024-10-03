@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import { User } from './user.model';
 import AppError from '../../errors/AppError';
 import { TUser } from './user.interface';
+import mongoose from 'mongoose';
 
 const getUserFromDB = async (id: string) => {
   const result = await User.findById(id).select('-password');
@@ -64,10 +65,61 @@ const updateUserRoleInDB = async (userId: string, role: string) => {
   return updatedUser;
 };
 
+const followUserIntoDB = async (userId: string, followUserId: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  // console.log(userId, followUserId);
+  try {
+    const user = await User.findById(userId).session(session);
+    const followUser = await User.findById(followUserId).session(session);
+
+    if (!user || !followUser) {
+      throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+    // Check if user is already following the followUser
+    const isFollowing = user.following.includes(followUserId);
+    console.log(isFollowing);
+    if (isFollowing) {
+      user.following = user.following.filter(
+        (id) => id.toString() !== followUserId,
+      );
+      followUser.followers = followUser.followers.filter(
+        (id) => id.toString() !== userId,
+      );
+
+      console.log(user.following, followUser.followers);
+    } else {
+      console.log('else');
+      user.following.push(followUserId);
+      console.log('object already');
+      followUser.followers.push(userId);
+    }
+
+    await user.save({ session });
+    await followUser.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      success: true,
+      message: isFollowing
+        ? 'Unfollowed successfully'
+        : 'Followed successfully',
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Transaction failed');
+  }
+};
+
 export const UserServices = {
   getUserFromDB,
   updateUserIntoDB,
   getAllUsersFromDB,
   deleteUserFromDB,
   updateUserRoleInDB,
+  followUserIntoDB,
 };
