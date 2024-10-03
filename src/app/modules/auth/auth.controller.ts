@@ -5,8 +5,29 @@ import { AuthServices } from './auth.service';
 import config from '../../config';
 import AppError from '../../errors/AppError';
 
+// const signUp = catchAsync(async (req, res) => {
+//   const result = await AuthServices.signUp(req.body);
+
+//   sendResponse(res, {
+//     statusCode: httpStatus.CREATED,
+//     success: true,
+//     message: 'User registered successfully',
+//     data: result,
+//   });
+// });
+
 const signUp = catchAsync(async (req, res) => {
-  const result = await AuthServices.signUp(req.body);
+  // const { name, email, password, phone, address, profilePhoto, terms } =
+  //   req.body;
+
+  const userData = {
+    ...req.body,
+    followers: [],
+    following: [],
+    articles: [],
+  };
+
+  const result = await AuthServices.signUp(userData);
 
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
@@ -73,12 +94,9 @@ const forgetPassword = catchAsync(async (req, res) => {
 });
 
 const resetPassword = catchAsync(async (req, res) => {
-  // const token = req.headers.Authorization;
-  // const token = req.body.token;
+  const token = req.headers.authorization?.split(' ')[1];
 
-  const token = req.headers.authorization?.split(' ')[1]; // Split 'Bearer <token>'
-
-  console.log(req.body, 'Request Body');
+  console.log(token);
 
   if (!token) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Token missing or invalid!');

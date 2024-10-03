@@ -2,7 +2,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { TRental } from './rental.interface';
 import { Rental } from './rental.model';
-import { Bike } from '../bike/bike.model';
+import { Bike } from '../articles/bike.model';
 import mongoose, { Types } from 'mongoose';
 import { TPayment } from '../payment/payment.interface';
 import { Payment } from '../payment/payment.model';

@@ -1,9 +1,9 @@
-import { Document, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { USER_ROLE } from './user.constants';
 
 export type TUserRole = keyof typeof USER_ROLE;
 
-export interface TUser extends Document {
+export type TUser = {
   name: string;
   email: string;
   password: string;
@@ -12,7 +12,10 @@ export interface TUser extends Document {
   role: TUserRole;
   profilePhoto?: string;
   terms?: boolean;
-}
+  followers: string[];
+  following: string[];
+  articles: string[];
+};
 
 export interface UserModel extends Model<TUser> {
   isUserExistsByEmail(email: string): Promise<TUser>;

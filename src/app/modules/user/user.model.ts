@@ -43,10 +43,9 @@ const userSchema = new Schema<TUser, UserModel>(
       type: Boolean,
       required: false,
     },
-    //   track password change times
-    // passwordChangedAt: {
-    //   type: Date,
-    // },
+    followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    articles: [{ type: Schema.Types.ObjectId, ref: 'Article' }],
   },
   {
     timestamps: true,

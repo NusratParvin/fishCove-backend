@@ -190,18 +190,16 @@ const resetPassword = async (
   ) as JwtPayload;
 
   if (payload.id !== decoded.id) {
-    console.log(payload.id, decoded.id);
     throw new AppError(
       httpStatus.FORBIDDEN,
       'You are forbidden from resetting this password!',
     );
   }
-  console.log(payload.newPassword, 'payload.newPassword');
+
   const newHashedPassword = await bcrypt.hash(
     payload.newPassword,
     Number(config.bcrypt_salt_rounds),
   );
-  console.log(newHashedPassword, 'payload.newPassword');
 
   const updatedUser = await User.findByIdAndUpdate(
     decoded.id,
