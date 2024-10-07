@@ -25,6 +25,10 @@ const userSchema = new Schema<TUser, UserModel>(
       type: String,
       required: true,
     },
+    bio: {
+      type: String,
+      required: false,
+    },
     address: {
       type: String,
       required: false,
@@ -43,10 +47,14 @@ const userSchema = new Schema<TUser, UserModel>(
       type: Boolean,
       required: false,
     },
-    followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    articles: [{ type: Schema.Types.ObjectId, ref: 'Article' }],
+    followers: [{ type: Schema.Types.ObjectId, ref: 'user' }],
+    following: [{ type: Schema.Types.ObjectId, ref: 'user' }],
+    articles: [{ type: Schema.Types.ObjectId, ref: 'article' }],
+    purchasedArticles: [
+      { type: Schema.Types.ObjectId, ref: 'article', default: [] },
+    ],
   },
+
   {
     timestamps: true,
   },

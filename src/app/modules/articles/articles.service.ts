@@ -1,19 +1,42 @@
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { Article } from './articles.model';
-import { TArticle } from './articles.interface';
+import { TArticle, TVoteType } from './articles.interface';
 import { User } from '../user/user.model';
+import mongoose, { Types } from 'mongoose';
 
-// Create an article
-const createArticleIntoDB = async (payload: TArticle) => {
-  console.log(payload);
-  const result = await Article.create(payload);
-  return result;
+const createArticleIntoDB = async (payload: TArticle, userId: string) => {
+  const articleData = { ...payload, authorId: userId };
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const article = await Article.create([articleData], { session });
+    if (!article || article.length === 0) {
+      throw new Error('Article creation failed');
+    }
+
+    const articleId = article[0]._id;
+
+    await User.findByIdAndUpdate(
+      userId,
+      { $push: { articles: articleId } },
+      { session, new: true },
+    );
+
+    await session.commitTransaction();
+
+    return article[0];
+  } catch (error) {
+    console.error('Error creating article:', error);
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
 };
 
-// Get all articles (for the feed)
 const getAllArticlesFromDB = async () => {
-  // const result = await Article.find();
   const result = await Article.find().populate({
     path: 'authorId',
     select: 'name profilePhoto followers',
@@ -22,11 +45,36 @@ const getAllArticlesFromDB = async () => {
 };
 
 // Get a single article by ID
-const getSingleArticleFromDB = async (
-  articleId: string,
-): Promise<TArticle | null> => {
-  const article = await Article.findById(articleId).populate('authorId');
+const getSingleArticleFromDB = async (articleId: string) => {
+  const article = await Article.findById(articleId)
+    .populate({
+      path: 'comments',
+      model: 'Comment',
+      select:
+        'content commenter upvotes downvotes createdAt updatedAt voteInfo',
+    })
+    .populate({
+      path: 'authorId',
+      select: 'name profilePhoto followers following',
+    });
+  // .exec();
 
+  // const article = await Article.findById(articleId).populate;
+  // .populate({
+  //   path: 'authorId',
+  //   select: 'name profilePhoto followers',
+  // });
+  // .populate('comments');
+  // if ((article?.comments?.length || 0) > 0) {
+  //   await article?.populate(
+  //     comments,
+  //     // path: 'comments',
+  //     // populate: {
+  //     //   path: 'commenter',
+  //     // },
+  //   );
+  // }
+  console.log(article, 'service');
   if (!article) {
     throw new AppError(httpStatus.NOT_FOUND, 'No Data Found');
   }
@@ -36,7 +84,8 @@ const getSingleArticleFromDB = async (
 
 const updateArticleVotesIntoDB = async (
   articleId: string,
-  action: 'upvote' | 'downvote',
+  action: TVoteType,
+  userId: string,
 ) => {
   const article = await Article.findById(articleId);
 
@@ -44,10 +93,39 @@ const updateArticleVotesIntoDB = async (
     throw new AppError(httpStatus.NOT_FOUND, 'Article not found');
   }
 
-  if (action === 'upvote') {
-    article.upvotes += 1;
-  } else if (action === 'downvote') {
-    article.downvotes += 1;
+  const existingVote = article.voteInfo.find(
+    (vote) => vote.userId.toString() === userId,
+  );
+
+  // If user has already voted
+  if (existingVote) {
+    if (existingVote.voteType === action) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'You have already cast this vote',
+      );
+    } else {
+      if (action === 'upvote') {
+        article.upvotes += 1;
+        article.downvotes -= 1;
+      } else if (action === 'downvote') {
+        article.downvotes += 1;
+        article.upvotes -= 1;
+      }
+
+      existingVote.voteType = action;
+    }
+  } else {
+    if (action === 'upvote') {
+      article.upvotes += 1;
+    } else if (action === 'downvote') {
+      article.downvotes += 1;
+    }
+
+    article.voteInfo.push({
+      userId: new Types.ObjectId(userId),
+      voteType: action,
+    });
   }
 
   const updatedArticle = await article.save();
@@ -120,6 +198,42 @@ const getDashboardFeed = async () => {
   };
 };
 
+const getMyArticlesFromDB = async (userId: string) => {
+  const articles = await Article.find({ authorId: userId }).populate({
+    path: 'authorId',
+    select: 'name profilePhoto followers',
+  });
+
+  if (!articles || articles.length === 0) {
+    throw new AppError(httpStatus.NOT_FOUND, 'No articles found for this user');
+  }
+
+  return articles;
+};
+
+const getArticlesByFollowingFromDB = async (userId: string) => {
+  const user = await User.findById(userId).select('following');
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  const followingIds = user.following;
+
+  const articles = await Article.find({
+    authorId: { $in: followingIds },
+  }).populate('authorId', 'name profilePhoto followers');
+
+  if (!articles.length) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'No articles found from followed users',
+    );
+  }
+
+  return articles;
+};
+
 export const ArticleServices = {
   createArticleIntoDB,
   getAllArticlesFromDB,
@@ -129,4 +243,6 @@ export const ArticleServices = {
   getAuthorsByMostFollowers,
   getDashboardFeed,
   updateArticleVotesIntoDB,
+  getMyArticlesFromDB,
+  getArticlesByFollowingFromDB,
 };

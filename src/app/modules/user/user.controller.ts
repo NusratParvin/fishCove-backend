@@ -5,7 +5,7 @@ import { UserServices } from './user.service';
 
 const getUser = catchAsync(async (req, res) => {
   const { id } = req.user;
-  console.log(id);
+  // console.log(id);
   const result = await UserServices.getUserFromDB(id);
 
   sendResponse(res, {
@@ -19,17 +19,20 @@ const getUser = catchAsync(async (req, res) => {
 const updateUserProfile = catchAsync(async (req, res) => {
   const { id } = req.user;
 
-  const { _id, role, ...updatedData } = req.body;
-  console.log(_id, role);
+  const updatedData = req.body;
+  // console.log('check', updatedData, 'check');
 
   const result = await UserServices.updateUserIntoDB(id, updatedData);
+  // console.log(result);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Profile updated successfully',
-    data: result,
-  });
+  if (result) {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Profile updated successfully',
+      data: result,
+    });
+  }
 });
 
 const getAllUsers = catchAsync(async (req, res) => {
@@ -72,7 +75,7 @@ const updateUserRole = catchAsync(async (req, res) => {
 const followUser = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const followUserId = req.params.id;
-  console.log(followUserId);
+  // console.log(followUserId);
 
   const result = await UserServices.followUserIntoDB(userId, followUserId);
 
@@ -83,6 +86,17 @@ const followUser = catchAsync(async (req, res) => {
   });
 });
 
+const getMostFollowedAuthors = catchAsync(async (req, res) => {
+  const authors = await UserServices.getMostFollowedAuthorsFromDB();
+  // console.log(authors);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Most followed authors fetched successfully',
+    data: authors,
+  });
+});
+
 export const UserControllers = {
   getUser,
   updateUserProfile,
@@ -90,4 +104,5 @@ export const UserControllers = {
   deleteUser,
   updateUserRole,
   followUser,
+  getMostFollowedAuthors,
 };

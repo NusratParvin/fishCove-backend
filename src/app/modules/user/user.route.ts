@@ -31,4 +31,6 @@ router.patch(
   UserControllers.followUser,
 );
 
+router.get('/most-followed', UserControllers.getMostFollowedAuthors);
+
 export const UserRoutes = router;

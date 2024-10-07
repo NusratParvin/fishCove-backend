@@ -5,48 +5,57 @@ import { PaymentService } from './payment.service';
 
 const createPaymentIntent = catchAsync(async (req, res) => {
   const { amount } = req.body;
-  console.log(amount);
-  if (amount <= 0) {
+
+  // Validate amount
+  if (!amount || typeof amount !== 'number' || amount <= 0) {
     return sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
       success: false,
-      message: 'Invalid amount',
+      message: 'Invalid or missing amount',
     });
   }
 
+  // Call the PaymentService to create a payment intent
   const paymentIntent = await PaymentService.createPaymentIntent(amount);
 
-  sendResponse(res, {
+  return sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Payment Intent created successfully',
-    // data: { clientSecret: paymentIntent. },
-    data: paymentIntent.client_secret,
+    data: paymentIntent.client_secret, // Send the client secret
   });
 });
 
 const confirmPayment = catchAsync(async (req, res) => {
-  const { paymentIntentId, paymentMethodId } = req.body;
+  const { transactionId, articleId, amount, userId, email, authorId } =
+    req.body;
 
-  if (!paymentIntentId || !paymentMethodId) {
+  // Validate that the necessary data exists
+  if (!transactionId || !articleId || !amount || !userId) {
     return sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
       success: false,
-      message: 'Missing payment intent ID or payment method ID',
+      message: 'Missing transaction ID, article ID, amount, or user ID',
     });
   }
 
-  // Confirm the payment intent with the payment method ID
-  const paymentIntent = await PaymentService.confirmPayment(
-    paymentIntentId,
-    paymentMethodId,
+  // Process the payment confirmation and store the necessary details in the database
+  const payment = await PaymentService.confirmPaymentIntoDB(
+    transactionId,
+    userId,
+    articleId,
+    amount,
+    email,
+    authorId,
   );
 
-  sendResponse(res, {
+  console.log(payment);
+
+  return sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Payment confirmed successfully',
-    data: paymentIntent,
+    data: payment,
   });
 });
 

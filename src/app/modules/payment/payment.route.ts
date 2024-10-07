@@ -7,12 +7,12 @@ const router = express.Router();
 
 router.post(
   '/create-payment-intent',
-  auth(USER_ROLE.user),
+  auth(USER_ROLE.USER, USER_ROLE.ADMIN),
   PaymentController.createPaymentIntent,
 );
 router.post(
   '/confirm-payment',
-  auth(USER_ROLE.user),
+  auth(USER_ROLE.USER, USER_ROLE.ADMIN),
   PaymentController.confirmPayment,
 );
 

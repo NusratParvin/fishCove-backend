@@ -21,6 +21,7 @@ const updateUserSchema = z.object({
   name: z.string().nonempty({ message: 'Name is required' }).optional(),
   email: z.string().email({ message: 'Invalid email address' }).optional(),
   phone: z.string().optional(),
+  bio: z.string().optional(),
   address: z.string().optional(),
   profilePhoto: z.string().url({ message: 'Invalid URL' }).optional(),
 });

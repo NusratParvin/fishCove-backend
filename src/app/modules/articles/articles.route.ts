@@ -17,6 +17,18 @@ router.post(
 router.get('/', ArticleControllers.getAllArticles);
 
 router.get(
+  '/me',
+  auth(USER_ROLE.USER, USER_ROLE.ADMIN),
+  ArticleControllers.getMyArticles,
+);
+
+router.get(
+  '/following',
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  ArticleControllers.getFollowingArticles,
+);
+
+router.get(
   '/:id',
   auth(USER_ROLE.USER, USER_ROLE.ADMIN),
   ArticleControllers.getSingleArticle,

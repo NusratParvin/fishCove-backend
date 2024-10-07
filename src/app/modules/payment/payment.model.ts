@@ -1,39 +1,38 @@
-import { model, Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { TPayment } from './payment.interface';
 
 const paymentSchema = new Schema<TPayment>(
   {
+    transactionId: {
+      type: String,
+      required: true,
+    },
     userId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'user',
+      required: true,
+    },
+    articleId: {
+      type: Schema.Types.ObjectId,
+      ref: 'article',
       required: true,
     },
     amount: {
       type: Number,
       required: true,
     },
-    paymentMethod: {
+    email: {
       type: String,
-      enum: ['card'],
       required: true,
     },
-    paymentDate: {
-      type: Date,
-      default: Date.now,
-    },
-    paymentStatus: {
+    status: {
       type: String,
       enum: ['pending', 'completed', 'failed'],
       required: true,
     },
-    transactionId: {
-      type: String,
-      default: null,
-    },
-    rentalId: {
+    authorId: {
       type: Schema.Types.ObjectId,
-      ref: 'Rental',
-      default: null,
+      ref: 'user',
     },
   },
   {

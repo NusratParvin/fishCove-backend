@@ -43,17 +43,30 @@ const articleSchema = new Schema<TArticle>(
     ],
     isPremium: {
       type: Boolean,
-      default: false,
+      required: [true, 'Premium Content Selection is required'],
     },
     price: {
       type: Number,
-      required: function () {
-        return this.isPremium;
-      },
+      default: 0,
     },
     isDeleted: {
       type: Boolean,
       default: false,
+    },
+    voteInfo: {
+      type: [
+        {
+          userId: {
+            type: Schema.Types.ObjectId,
+            ref: 'user',
+          },
+          voteType: {
+            type: String,
+            enum: ['upvote', 'downvote'],
+          },
+        },
+      ],
+      default: [],
     },
   },
   {
@@ -61,5 +74,4 @@ const articleSchema = new Schema<TArticle>(
   },
 );
 
-// Export the Article model
 export const Article = model<TArticle>('Article', articleSchema);

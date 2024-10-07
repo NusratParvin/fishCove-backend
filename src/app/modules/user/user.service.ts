@@ -11,7 +11,15 @@ const getUserFromDB = async (id: string) => {
 };
 
 const updateUserIntoDB = async (userId: string, payload: Partial<TUser>) => {
-  if (payload.email) {
+  // Find the user to get the current email
+  const currentUser = await User.findById(userId);
+
+  if (!currentUser) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // Check if the email is being updated
+  if (payload.email && payload.email !== currentUser.email) {
     const existingUser = await User.findOne({ email: payload.email });
 
     if (existingUser) {
@@ -26,7 +34,7 @@ const updateUserIntoDB = async (userId: string, payload: Partial<TUser>) => {
   ).select('-password');
 
   if (!updatedUser) {
-    throw new Error('User not found');
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }
 
   return updatedUser;
@@ -38,7 +46,7 @@ const getAllUsersFromDB = async () => {
 };
 
 const deleteUserFromDB = async (userId: string) => {
-  console.log(userId);
+  // console.log(userId);
   if (!userId) {
     throw new AppError(httpStatus.BAD_REQUEST, 'No user ID provided');
   }
@@ -65,54 +73,72 @@ const updateUserRoleInDB = async (userId: string, role: string) => {
   return updatedUser;
 };
 
-const followUserIntoDB = async (userId: string, followUserId: string) => {
+const followUserIntoDB = async (
+  currentUserId: string,
+  targetUserId: string,
+) => {
   const session = await mongoose.startSession();
   session.startTransaction();
-  // console.log(userId, followUserId);
-  try {
-    const user = await User.findById(userId).session(session);
-    const followUser = await User.findById(followUserId).session(session);
 
-    if (!user || !followUser) {
+  try {
+    // Fetch the current user and the target user
+    const currentUser = await User.findById(currentUserId).session(session);
+    const targetUser = await User.findById(targetUserId).session(session);
+
+    // If either user is not found, throw an error
+    if (!currentUser || !targetUser) {
       throw new AppError(httpStatus.NOT_FOUND, 'User not found');
     }
 
-    // Check if user is already following the followUser
-    const isFollowing = user.following.includes(followUserId);
-    console.log(isFollowing);
-    if (isFollowing) {
-      user.following = user.following.filter(
-        (id) => id.toString() !== followUserId,
-      );
-      followUser.followers = followUser.followers.filter(
-        (id) => id.toString() !== userId,
+    // Check if the current user is already following the target user
+    const isAlreadyFollowing = currentUser.following.includes(targetUserId);
+
+    if (isAlreadyFollowing) {
+      // If already following, remove the targetUserId from the following array
+      currentUser.following = currentUser.following.filter(
+        (id) => id.toString() !== targetUserId,
       );
 
-      console.log(user.following, followUser.followers);
+      // Remove currentUserId from the target user's followers array
+      targetUser.followers = targetUser.followers.filter(
+        (id) => id.toString() !== currentUserId,
+      );
     } else {
-      console.log('else');
-      user.following.push(followUserId);
-      console.log('object already');
-      followUser.followers.push(userId);
+      // If not already following, add targetUserId to the following array
+      currentUser.following.push(targetUserId);
+
+      // Add currentUserId to the target user's followers array
+      targetUser.followers.push(currentUserId);
     }
 
-    await user.save({ session });
-    await followUser.save({ session });
+    // Save both users' data within the session
+    await currentUser.save({ session });
+    await targetUser.save({ session });
 
+    // Commit the transaction
     await session.commitTransaction();
     session.endSession();
 
     return {
       success: true,
-      message: isFollowing
+      message: isAlreadyFollowing
         ? 'Unfollowed successfully'
         : 'Followed successfully',
     };
   } catch (error) {
+    // Abort transaction if there is an error
     await session.abortTransaction();
     session.endSession();
     throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Transaction failed');
   }
+};
+
+const getMostFollowedAuthorsFromDB = async () => {
+  const authors = await User.find().sort({ followers: -1 });
+  // .limit(4);
+  // .select('name profilePhoto followers articles');
+  // console.log(authors);
+  return authors;
 };
 
 export const UserServices = {
@@ -122,4 +148,5 @@ export const UserServices = {
   deleteUserFromDB,
   updateUserRoleInDB,
   followUserIntoDB,
+  getMostFollowedAuthorsFromDB,
 };

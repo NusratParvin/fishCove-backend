@@ -1,11 +1,11 @@
 import { Types } from 'mongoose';
 
 export type TPayment = {
-  userId: Types.ObjectId;
-  amount: number;
-  paymentMethod: 'card';
-  paymentDate: Date;
-  paymentStatus: 'pending' | 'completed' | 'failed';
   transactionId: string;
-  rentalId?: Types.ObjectId;
+  userId: Types.ObjectId;
+  articleId: Types.ObjectId;
+  amount: number;
+  email: string;
+  status: 'pending' | 'completed' | 'failed';
+  authorId?: Types.ObjectId;
 };

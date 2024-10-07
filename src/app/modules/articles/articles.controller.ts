@@ -4,29 +4,30 @@ import sendResponse from '../../utils/sendResponse';
 import AppError from '../../errors/AppError';
 import { ArticleServices } from './articles.service';
 
-// Create an article
 const createArticle = catchAsync(async (req, res) => {
   const authorId = req.user.id;
-  console.log(authorId);
-  const articleData = {
-    authorId,
-    ...req.body,
-    // title: req.body.title,
-    // content: req.body.content,
-    // category: req.body.category,
-    // images: req.body.images,
-    // isPremium: req.body.isPremium,
-    // price: req.body.price,
-  };
-  console.log(articleData, 'controller');
-  const result = await ArticleServices.createArticleIntoDB(articleData);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Article created successfully',
-    data: result,
-  });
+  const articleData = {
+    ...req.body,
+  };
+
+  console.log(articleData, authorId, 'Controller ');
+
+  const result = await ArticleServices.createArticleIntoDB(
+    articleData,
+    authorId,
+  );
+
+  console.log(result, 'Article Created');
+
+  if (result) {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Article created successfully',
+      data: result,
+    });
+  }
 });
 
 // Get all articles
@@ -53,6 +54,7 @@ const getAllArticles = catchAsync(async (req, res) => {
 const getSingleArticle = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await ArticleServices.getSingleArticleFromDB(id);
+  // console.log(result);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -61,6 +63,46 @@ const getSingleArticle = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getMyArticles = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  // console.log(userId);
+  const result = await ArticleServices.getMyArticlesFromDB(userId);
+  if (result.length) {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'MY Articles fetched successfully',
+      data: result,
+    });
+  }
+});
+
+const getFollowingArticles = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  // console.log(userId);
+  const articles = await ArticleServices.getArticlesByFollowingFromDB(userId);
+  // console.log(articles.length);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Articles from followed users fetched successfully',
+    data: articles,
+  });
+});
+
+// const getFollowingArticles = catchAsync(async (req, res) => {
+//   const userId = req.user.id;
+//   console.log(userId);
+//   const articles = await ArticleServices.getArticlesByFollowingFromDB(userId);
+
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: 'Articles from followed users fetched successfully',
+//     data: articles,
+//   });
+// });
 
 // Update an article
 const updateArticle = catchAsync(async (req, res) => {
@@ -81,12 +123,13 @@ const updateArticle = catchAsync(async (req, res) => {
 
 const voteArticle = catchAsync(async (req, res) => {
   const articleId = req.params.id;
-  // const userId = req.user.id;
+  const userId = req.user.id;
   const { action } = req.body;
 
   const updatedArticle = await ArticleServices.updateArticleVotesIntoDB(
     articleId,
     action,
+    userId,
   );
 
   sendResponse(res, {
@@ -134,4 +177,6 @@ export const ArticleControllers = {
   deleteArticle,
   getDashboardFeed,
   voteArticle,
+  getMyArticles,
+  getFollowingArticles,
 };
