@@ -68,7 +68,8 @@ const getMyArticles = catchAsync(async (req, res) => {
   const userId = req.user.id;
   // console.log(userId);
   const result = await ArticleServices.getMyArticlesFromDB(userId);
-  if (result.length) {
+  console.log(result);
+  if (result) {
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -107,7 +108,18 @@ const getFollowingArticles = catchAsync(async (req, res) => {
 // Update an article
 const updateArticle = catchAsync(async (req, res) => {
   const articleId = req.params.id;
-  const updateData = req.body;
+  const updateData = req.body; // Should contain the updated fields
+
+  console.log('Incoming Update Data:', updateData); // Check if it's populated
+
+  if (Object.keys(updateData).length === 0) {
+    console.error('No data sent in the request.');
+    return res.status(400).json({
+      success: false,
+      message: 'No data provided for update',
+    });
+  }
+
   const updatedArticle = await ArticleServices.updateArticleIntoDB(
     articleId,
     updateData,
@@ -136,6 +148,23 @@ const voteArticle = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'vote updated successfully',
+    data: updatedArticle,
+  });
+});
+
+const publishArticle = catchAsync(async (req, res) => {
+  const articleId = req.params.id;
+  const { isPublish } = req.body;
+  console.log(articleId, isPublish, 'check cntroller');
+  const updatedArticle = await ArticleServices.updatePublishArticleIntoDB(
+    articleId,
+    isPublish,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Article ${isPublish ? 'published' : 'unpublished'} successfully`,
     data: updatedArticle,
   });
 });
@@ -174,6 +203,7 @@ export const ArticleControllers = {
   getAllArticles,
   getSingleArticle,
   updateArticle,
+  publishArticle,
   deleteArticle,
   getDashboardFeed,
   voteArticle,

@@ -55,7 +55,7 @@ const getSingleArticleFromDB = async (articleId: string) => {
     })
     .populate({
       path: 'authorId',
-      select: 'name profilePhoto followers following',
+      select: 'name profilePhoto followers following ',
     });
   // .exec();
 
@@ -142,26 +142,81 @@ const updateArticleIntoDB = async (
   articleId: string,
   updateData: Partial<TArticle>,
 ) => {
+  // Check if the article exists
   const isArticleExists = await Article.findById(articleId);
 
   if (!isArticleExists) {
     throw new AppError(httpStatus.NOT_FOUND, 'No Data Found');
   }
 
-  const updatedArticle = await Article.findByIdAndUpdate(
-    articleId,
-    updateData,
-    {
-      new: true,
-      runValidators: true,
-    },
-  );
-
-  if (!updatedArticle) {
-    throw new AppError(httpStatus.NOT_IMPLEMENTED, 'Update Failed');
+  // If isPremium is set to false, set price to 0
+  if (updateData.isPremium === false) {
+    updateData.price = 0;
   }
 
-  return updatedArticle;
+  console.log('Update Data:', updateData, 'bhbmnbmbn,n,m'); // Debugging - Log updateData
+
+  try {
+    // Update the article
+    const updatedArticle = await Article.findByIdAndUpdate(
+      articleId,
+      updateData,
+      {
+        new: true, // Return the updated document
+        runValidators: true, // Ensure validators run on update
+      },
+    );
+
+    if (!updatedArticle) {
+      throw new AppError(httpStatus.NOT_IMPLEMENTED, 'Update Failed');
+    }
+
+    return updatedArticle;
+  } catch (error) {
+    console.error('Update Error:', error); // Debugging - Log errors
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Update Failed');
+  }
+};
+
+// Update publish status of an article
+const updatePublishArticleIntoDB = async (
+  articleId: string,
+  isPublish: boolean,
+) => {
+  const isArticleExists = await Article.findById(articleId);
+  console.log(isPublish, 'check');
+  if (!isArticleExists) {
+    throw new AppError(httpStatus.NOT_FOUND, 'No Data Found');
+  }
+
+  const updateData: Partial<TArticle> = {
+    isPublish: isPublish,
+  };
+
+  console.log('  Publish Status:', updateData);
+
+  try {
+    const updatedArticle = await Article.findByIdAndUpdate(
+      articleId,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (!updatedArticle) {
+      throw new AppError(httpStatus.NOT_IMPLEMENTED, 'Publish Update Failed');
+    }
+
+    return updatedArticle;
+  } catch (error) {
+    console.error('Publish   Error:', error);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Publish Update Failed',
+    );
+  }
 };
 
 // Delete an article
@@ -203,12 +258,13 @@ const getMyArticlesFromDB = async (userId: string) => {
     path: 'authorId',
     select: 'name profilePhoto followers',
   });
-
+  console.log(articles);
   if (!articles || articles.length === 0) {
     throw new AppError(httpStatus.NOT_FOUND, 'No articles found for this user');
   }
 
   return articles;
+  // return false;
 };
 
 const getArticlesByFollowingFromDB = async (userId: string) => {
@@ -239,6 +295,7 @@ export const ArticleServices = {
   getAllArticlesFromDB,
   getSingleArticleFromDB,
   updateArticleIntoDB,
+  updatePublishArticleIntoDB,
   deleteArticleFromDB,
   getAuthorsByMostFollowers,
   getDashboardFeed,

@@ -3,10 +3,20 @@ import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import { PaymentService } from './payment.service';
 
+const getAllPayments = catchAsync(async (req, res) => {
+  const payments = await PaymentService.getAllPaymentsFromDB();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Payments retrieved successfully',
+    data: payments,
+  });
+});
+
 const createPaymentIntent = catchAsync(async (req, res) => {
   const { amount } = req.body;
 
-  // Validate amount
   if (!amount || typeof amount !== 'number' || amount <= 0) {
     return sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
@@ -15,14 +25,13 @@ const createPaymentIntent = catchAsync(async (req, res) => {
     });
   }
 
-  // Call the PaymentService to create a payment intent
   const paymentIntent = await PaymentService.createPaymentIntent(amount);
 
   return sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Payment Intent created successfully',
-    data: paymentIntent.client_secret, // Send the client secret
+    data: paymentIntent.client_secret,
   });
 });
 
@@ -30,7 +39,6 @@ const confirmPayment = catchAsync(async (req, res) => {
   const { transactionId, articleId, amount, userId, email, authorId } =
     req.body;
 
-  // Validate that the necessary data exists
   if (!transactionId || !articleId || !amount || !userId) {
     return sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
@@ -39,7 +47,6 @@ const confirmPayment = catchAsync(async (req, res) => {
     });
   }
 
-  // Process the payment confirmation and store the necessary details in the database
   const payment = await PaymentService.confirmPaymentIntoDB(
     transactionId,
     userId,
@@ -59,7 +66,22 @@ const confirmPayment = catchAsync(async (req, res) => {
   });
 });
 
+const deletePayment = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const deletedUser = await PaymentService.deletePaymentFromDB(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.NO_CONTENT,
+    success: true,
+    message: 'Transaction deleted successfully',
+    data: deletedUser,
+  });
+});
+
 export const PaymentController = {
   createPaymentIntent,
   confirmPayment,
+  getAllPayments,
+  deletePayment,
 };

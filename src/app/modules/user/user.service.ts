@@ -46,7 +46,7 @@ const getAllUsersFromDB = async () => {
 };
 
 const deleteUserFromDB = async (userId: string) => {
-  // console.log(userId);
+  console.log(userId);
   if (!userId) {
     throw new AppError(httpStatus.BAD_REQUEST, 'No user ID provided');
   }

@@ -12,6 +12,7 @@ router.get(
   auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   UserControllers.getUser,
 );
+
 router.put(
   '/me',
   auth(USER_ROLE.ADMIN, USER_ROLE.USER),

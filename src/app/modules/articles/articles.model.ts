@@ -53,6 +53,10 @@ const articleSchema = new Schema<TArticle>(
       type: Boolean,
       default: false,
     },
+    isPublish: {
+      type: Boolean,
+      default: true,
+    },
     voteInfo: {
       type: [
         {

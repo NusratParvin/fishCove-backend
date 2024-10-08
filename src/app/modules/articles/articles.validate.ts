@@ -36,6 +36,8 @@ const updateArticleValidationSchema = z.object({
       }),
     )
     .optional(),
+  isPremium: z.boolean().optional(),
+  price: z.number().nonnegative().optional(),
 });
 
 export const ArticleValidation = {

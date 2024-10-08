@@ -45,10 +45,12 @@ const login = catchAsync(async (req, res) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: config.NODE_ENV === 'production',
+    sameSite: 'lax',
   });
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: config.NODE_ENV === 'production',
+    // secure: config.NODE_ENV === 'production',
+    sameSite: 'lax',
   });
   // console.log(userExists);
   // const loggedInUser = {
@@ -59,6 +61,16 @@ const login = catchAsync(async (req, res) => {
   //   address: userExists.address,
   //   role: userExists.role,
   // };
+
+  // sendResponse(res, {
+  //   statusCode: httpStatus.OK,
+  //   success: true,
+  //   message: 'User is logged in successfully!',
+  //   data: {
+  //     accessToken,
+  //     refreshToken,
+  //   },
+  // });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

@@ -19,5 +19,6 @@ export type TArticle = {
   isPremium: boolean;
   price?: number;
   isDeleted?: boolean;
+  isPublish: boolean;
   voteInfo: TVoteInfo[];
 };

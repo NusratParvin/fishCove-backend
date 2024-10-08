@@ -28,13 +28,9 @@ router.get(
   ArticleControllers.getFollowingArticles,
 );
 
-router.get(
-  '/:id',
-  auth(USER_ROLE.USER, USER_ROLE.ADMIN),
-  ArticleControllers.getSingleArticle,
-);
+router.get('/:id', ArticleControllers.getSingleArticle);
 
-router.put(
+router.patch(
   '/:id',
   auth(USER_ROLE.USER, USER_ROLE.ADMIN),
   zodValidationRequest(ArticleValidation.updateArticleValidationSchema),
@@ -47,7 +43,17 @@ router.patch(
   ArticleControllers.voteArticle,
 );
 
-router.delete('/:id', auth(USER_ROLE.ADMIN), ArticleControllers.deleteArticle);
+router.patch(
+  '/:id/publish',
+  auth(USER_ROLE.ADMIN),
+  ArticleControllers.publishArticle,
+);
+
+router.delete(
+  '/:id',
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  ArticleControllers.deleteArticle,
+);
 
 router.get(
   '/dashboard-feed',

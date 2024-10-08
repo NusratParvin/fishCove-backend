@@ -23,7 +23,7 @@ const updateUserSchema = z.object({
   phone: z.string().optional(),
   bio: z.string().optional(),
   address: z.string().optional(),
-  profilePhoto: z.string().url({ message: 'Invalid URL' }).optional(),
+  // profilePhoto: z.string().url({ message: 'Invalid URL' }).optional(),
 });
 
 export const userValidation = {

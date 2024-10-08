@@ -1,39 +1,38 @@
-# Bike Rental Service
+# FishCove: Fish Care Tips & Stories
 
-Welcome to the Bike Rental Reservation System! This project is designed to manage bike rentals in Cox's Bazar, catering to both tourists and locals with a seamless online booking experience. The backend system handles user registrations, bike availability, and booking management efficiently.
-
-## Live URL
-
-```sh
-https://bike-rental-service-serverside.vercel.app/
-```
+Welcome to **FishCove**, a platform dedicated to offering expert tips and advice on fish care. Whether you're a beginner or an experienced fish owner, FishCove provides detailed guides, engaging stories, and premium content to help you maintain a healthy and happy aquatic life for your pets.
 
 ## Features
 
-- **User Registration and Login**: Secure user authentication with JWT.
-- **Profile Management**: Update user profiles with validation.
-- **Bike Management (Admin Only)**: Create, update, and delete bike listings.
-- **Bike Rental**: Rent bikes, update rental status, and calculate total cost based on rental duration.
-- **Rental Management**: View all rentals and manage rental returns.
+- **User Registration and Login**: Secure user authentication using JWT tokens, allowing users to register, log in, and access exclusive content.
+- **Profile Management**: Users can update their profiles, including profile pictures, personal information, and view their articles, followers, and following lists.
+- **Fish Care Articles**: Users can browse tips and stories about fish care, including nutrition, tank maintenance, and more.
+- **Premium Content**: Premium articles are available for users who have made payments, providing access to exclusive content on fish care.
+- **Article Creation & Management**: Users can write, edit, and delete their fish care tips and stories. Articles can be categorized as either "Tip" or "Story."
+- **Upvote & Downvote System**: Users can upvote or downvote articles, providing feedback and helping others discover the most valuable content.
+- **Commenting System**: Users can comment on articles, reply to other comments, and engage in discussions.
+- **Payment Integration**: Stripe is integrated to handle payments for premium content. Users can unlock premium articles through secure transactions.
 
 ## Technology Stack
 
 - **Programming Language**: TypeScript
-- **Web Framework**: Express.js
+- **Web Framework**: Next.js
 - **Database**: MongoDB with Mongoose ODM
 - **Validation**: Zod
 - **Authentication**: JWT (JSON Web Token)
+- **Payment Gateway**: Stripe for handling secure payments
 
 ## Setup and Installation
 
 ### Clone the Repository
 
-1. **Clone the repository:**
+1. **Clone the repository**:
 
-```sh
-git clone https://github.com/NusratParvin/Bike-Rental-Service
-cd bike-rental-service
-```
+   ```bash
+   git clone https://github.com/your-username/fishcove-backend.git
+   cd fishcove-backend
+
+   ```
 
 2. **Install dependencies:**
 
@@ -57,381 +56,97 @@ cd bike-rental-service
 
 ## API Endpoints
 
-### User Routes
+## API Endpoints
 
-**Sign Up**
+- **Register User**:  
+  _Endpoint_: `/api/auth/register`  
+  _Method_: `POST`  
+  Allows a new user to create an account by providing essential details like name, email, password, and phone number.
 
-- **Endpoint:** `/api/auth/signup`
-- **Method:** `POST`
-- **Request Body:**
+  **Request Body**:
 
-  ```
-
+  ```json
   {
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "phone": "1234567890",
-  "address": "123 Main St, Anytown",
-  "role": "admin"
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "phone": "1234567890"
   }
   ```
 
-``
+### **Login User**
 
-- **Response :**
-  ```
-  {
-  "success": true,
-  "statusCode": 201,
-  "message": "User registered successfully",
-  "data": {
-  "_id": "60d9c4e4f3b4b544b8b8d1f5",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "phone": "1234567890",
-  "address": "123 Main St, Anytown",
-  "role": "admin",
-  "createdAt": "2024-06-10T13:26:51.289Z",
-  "updatedAt": "2024-06-10T13:26:51.289Z",
-  "__v": 0
-  }
-  }
-  ``
-  ```
+- **Endpoint**: `/api/auth/login`
+- **Method**: `POST`
+- **Description**:  
+  Authenticates an existing user by verifying their email and password, returning a JWT token for secure access.
 
-**User Login**
+**Request Body**:
 
-- **Endpoint:** `/api/auth/login`
-- **Method:** `POST`
-- **Request Body:**
-
-  ```
-
-  {
+````json
+{
   "email": "john@example.com",
   "password": "password123"
-  }
-  ```
+}
 
-- **Response :**
+### **Create Article**
+* **Endpoint**: `/api/articles`
+* **Method**: `POST`
+* **Authentication Required**
+* **Description**:
+  Authenticated users can create new articles by providing details such as the title, content, category, and whether the article is premium.
 
-```
-
+**Request Body**:
+```json
 {
-"success": true,
-"statusCode": 200,
-"message": "User logged in successfully",
-"token": "jwt_token",
-"data": {
-"\_id": "60d9c4e4f3b4b544b8b8d1c3",
-"name": "John Doe",
-"email": "john@example.com",
-"phone": "1234567890",
-"address": "123 Main St, Anytown",
-"role": "admin"
-}
+  "title": "Fish Tank Maintenance Tips",
+  "content": "Content about maintaining fish tanks...",
+  "category": "Tip",
+  "isPremium": true
 }
 
-``
+### **Get All Articles**
+* **Endpoint**: `/api/articles`
+* **Method**: `GET`
+* **Description**:
+  Retrieves a list of all published articles, including both tips and stories. Users can view both premium and free content based on their access level.
 
-```
+---
 
-**Get Profile**
+### **Upvote Article**
+* **Endpoint**: `/api/articles/:id/upvote`
+* **Method**: `POST`
+* **Authentication Required**
+* **Description**:
+  Allows authenticated users to upvote an article, helping to surface valuable content within the community.
 
-- **Endpoint:** `/api/users/me`
-- **Method:** `GET`
-- **Request Headers:** `Authorization: Bearer jwt_token`:
+---
 
-- **Response :**
+### **Unlock Premium Content**
+* **Endpoint**: `/api/payments`
+* **Method**: `POST`
+* **Authentication Required**
+* **Description**:
+  Users can make payments to unlock premium articles. The endpoint handles secure payments through Stripe to provide access to exclusive content.
 
-  ```
-  {
-  "success": true,
-  "statusCode": 200,
-  "message": "User profile retrieved successfully",
-  "data": {
-  "_id": "6666ff917181b8e5ffe04f91",
-  "name": "admin",
-  "email": "admin@gmail.com",
-  "phone": "1234567890",
-  "address": "123 Main St, Anytown",
-  "role": "admin",
-  "createdAt": "2024-06-10T13:28:49.260Z",
-  "updatedAt": "2024-06-10T13:28:49.260Z",
-  "__v": 0
-  }
-  }
-  ```
-
-**Update Profile**
-
-- **Endpoint:** `/api/users/me`
-- **Method:** `PUT`
-- **Request Headers:** `Authorization: Bearer jwt_token`
-
-- **Request Body :**
-
-```
-
+**Request Body**:
+```json
 {
-"name": "John Updated",
-"phone": "0987654321"
+  "articleId": "article_id"
 }
 
-```
 
-- **Response :**
+## Deployment
 
-```
+* **Deploy to Vercel**: Connect the repository, add environment variables, and deploy using the Vercel dashboard.
 
-{
-"success": true,
-"statusCode": 200,
-"message": "Profile updated successfully",
-"data": {
-"\_id": "60d9c4e4f3b4b544b8b8d1c5",
-"name": "John Updated",
-"email": "john@example.com",
-"phone": "0987654321",
-"address": "123 Main St, Anytown",
-"role": "admin"
-}
-}
+## Future Enhancements
 
-``
-```
+* **PDF Generation**: Generate fish care guides in PDF format.
+* **Notifications**: Real-time notifications for new articles and comments.
+* **Mobile App**: Develop a mobile version of FishCove.
 
-### Bike Routes
 
-- **Create Bike (Admin Only)**
-
-  - **Endpoint:** `/api/bikes`
-  - **Method:** `POST`
-  - **Request Headers:** `Authorization: Bearer jwt_token`
-
-  - **Request Body:**
-
-    ```
-    {
-    "name": "Mountain Bike",
-    "description": "A durable mountain bike for rough terrains.",
-    "pricePerHour": 15,
-    "cc": 250,
-    "year": 2022,
-    "model": "X1",
-    "brand": "Yamaha"
-    }
-    ```
-
-  - **Response:**
-
-  ```
-
-  {
-
-  "success": true,
-  "statusCode": 200,
-  "message": "Bike added successfully",
-  "data": {
-  "\_id": "60d9c4e4f3b4b544b8b8d1c4",
-  "name": "Mountain Bike",
-  "description": "A durable mountain bike for rough terrains.",
-  "pricePerHour": 15,
-  "isAvailable": true,
-  "cc": 250,
-  "year": 2022,
-  "model": "X1",
-  "brand": "Yamaha"
-  }
-  }
-
-  ```
-
-- **Get All Bikes**
-
-  - **Endpoint:** `/api/bikes`
-  - **Method:** `GET`
-  - **Response:**
-
-    ```
-    {
-    "success": true,
-    "statusCode": 200,
-    "message": "Bikes retrieved successfully",
-    "data": [
-    {
-    "_id": "bike_id",
-    "name": "Mountain Bike",
-    "description": "A durable mountain bike for rough terrains.",
-    "pricePerHour": 15,
-    "isAvailable": true,
-    "cc": 250,
-    "year": 2022,
-    "model": "X1",
-    "brand": "Yamaha"
-    },
-    ...other bikes...
-    ]
-    }
-    ```
-
-- **Update Bike (Admin Only)**
-
-  - **Endpoint:** `/api/bikes/:id`
-  - **Method:** `PUT`
-  - **Request Headers:** `Authorization: Bearer jwt_token`
-  - **Request Body:**
-
-  ```
-
-    {
-    "pricePerHour": 20
-    }
-  ```
-
-  - **Response:**
-
-  ```
-  {
-
-  "success": true,
-  "statusCode": 200,
-  "message": "Bike updated successfully",
-  "data": {
-  "_id": "bike_id",
-  "name": "Mountain Bike",
-  "description": "A durable mountain bike for rough terrains.",
-  "pricePerHour": 20,
-  "isAvailable": true,
-  "cc": 250,
-  "year": 2022,
-  "model": "X1",
-  "brand": "Yamaha"
-  }
-  }
-  ```
-
-- **Delete Bike (Admin Only)**
-
-  - **Endpoint:** `/api/bikes/:id`
-  - **Method:** `DELETE`
-  - **Request Headers:** `Authorization: Bearer jwt_token`
-  - **Response:**
-
-    ```
-    {
-
-    "success": true,
-    "statusCode": 200,
-    "message": "Bike deleted successfully",
-    "data": {
-    "_id": "bike_id",
-    "name": "Mountain Bike",
-    "description": "A durable mountain bike for rough terrains.",
-    "pricePerHour": 20,
-    "isAvailable": false,
-    "cc": 250,
-    "year": 2022,
-    "model": "X1",
-    "brand": "Yamaha"
-    }
-    }
-    ```
-
-### Rental Routes
-
-- **Create Rental**
-
-  - **Endpoint:** `/api/rentals`
-  - **Method:** `POST`
-  - **Request Headers:** `Authorization: Bearer jwt_token`
-  - **Request Body:**
-
-    ```
-
-    {
-    "bikeId": "60d9c4e4f3b4b544b8b8d1c4",
-    "startTime": "2024-06-10T09:00:00Z"
-    }
-    ```
-
-  - **Response:**
-
-    ```
-    {
-
-    "success": true,
-    "statusCode": 200,
-    "message": "Rental created successfully",
-    "data": {
-    "_id": "60d9c4e4f3b4b544b8b8d1c4",
-    "userId": "60d9c4e4f3b4b544b8b8d1c3",
-    "bikeId": "60d9c4e4f3b4b544b8b8d1c4",
-    "startTime": "2024-06-10T09:00:00Z",
-    "returnTime": null,
-    "totalCost": 0,
-    "isReturned": false
-    }
-    }
-    ``
-    ```
-
-- **Return Bike (Admin only)**
-
-  - **Endpoint:** `/api/bikes`
-  - **Method:** `PUT`
-  - **Request Headers:** `Authorization: Bearer jwt_token`
-  - **Response:**
-
-  ```
-
-  {
-  "success": true,
-  "statusCode": 200,
-  "message": "Bike returned successfully",
-  "data": {
-  "_id": "60d9c4e4f3b4b544b8b8d1c4",
-  "userId": "60d9c4e4f3b4b544b8b8d1c3",
-  "bikeId": "60d9c4e4f3b4b544b8b8d1c4",
-  "startTime": "2024-06-10T09:00:00Z",
-  "returnTime": "2024-06-10T18:00:00Z",
-  "totalCost": 135,
-  "isReturned": true
-  }
-  }
-  ``
-
-  ```
-
-- **Get All Rentals for User (My rentals)**
-
-  - **Endpoint:** `/api/rentals`
-  - **Method:** `GET`
-  - **Request Headers:** `Authorization: Bearer jwt_token`
-  - **Response:**
-
-    ```
-    {
-
-    "success": true,
-    "statusCode": 200,
-    "message": "Rentals retrieved successfully",
-    "data": [
-    {
-    "_id": "60d9c4e4f3b4b544b8b8d1c4",
-    "userId": "60d9c4e4f3b4b544b8b8d1c3",
-    "bikeId": "60d9c4e4f3b4b544b8b8d1c4",
-    "startTime": "2024-06-10T09:00:00Z",
-    "returnTime": "2024-06-10T18:00:00Z",
-    "totalCost": 135,
-    "isReturned": true
-    },
-    ...other rentals...
-    ]
-    }
-    ``
-    ```
 
 ## Error Handling
 
@@ -451,33 +166,35 @@ Validation errors from Zod are handled explicitly in the controllers, and other 
 
 - **Error Response Object:**
 
-  ```
+````
 
-  {
-  "success": false,
-  "message": "Error Type (e.g., Validation Error, Cast Error, Duplicate Entry)",
-  "errorMessages": [
-  {
-  "path": "",
-  "message": "Error message"
-  }
-  ],
-  "stack": "error stack"
-  }
+{
+"success": false,
+"message": "Error Type (e.g., Validation Error, Cast Error, Duplicate Entry)",
+"errorMessages": [
+{
+"path": "",
+"message": "Error message"
+}
+],
+"stack": "error stack"
+}
 
-  ``
+``
 
-  ```
+```
 
 - **Authentication Middleware:**
 
-  ```
+```
 
-  {
-  "success": false,
-  "statusCode": 401,
-  "message": "You have no access to this route"
-  }
+{
+"success": false,
+"statusCode": 401,
+"message": "You have no access to this route"
+}
 
-  ```
-"# fishCove-backend" 
+```
+
+"# fishCove-backend"
+```

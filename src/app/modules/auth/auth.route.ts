@@ -3,8 +3,8 @@ import zodValidationRequest from '../../middlewares/zodValidationRequest';
 import { AuthValidation } from './auth.validate';
 import { AuthControllers } from './auth.controller';
 import { userValidation } from '../user/user.validate';
-import { USER_ROLE } from '../user/user.constants';
-import auth from '../../middlewares/auth';
+// import { USER_ROLE } from '../user/user.constants';
+// import auth from '../../middlewares/auth';
 
 const router = express.Router();
 
@@ -30,7 +30,7 @@ router.post(
 
 router.post(
   '/change-password',
-  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  // auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   zodValidationRequest(AuthValidation.changePasswordValidationSchema),
   AuthControllers.changePassword,
 );
