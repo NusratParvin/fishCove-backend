@@ -7,10 +7,12 @@ import { USER_ROLE } from '../user/user.constants';
 
 const router = Router();
 
+router.get('/stats', auth(USER_ROLE.ADMIN), InsuranceController.getDomainStats);
+
 router.get(
-  '/stats',
+  '/stats/dashboard',
   auth(USER_ROLE.ADMIN),
-  InsuranceController.getDashboardStats,
+  InsuranceController.getProviderCardStats,
 );
 
 //   Provider routes
