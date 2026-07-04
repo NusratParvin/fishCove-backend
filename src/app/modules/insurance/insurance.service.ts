@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GoogleGenAI } from '@google/genai';
 import { InsuranceProvider } from './insurance.model';
 import { TInsuranceProvider } from './insurance.interface';
@@ -103,7 +104,7 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
 const WELL_COVERED_THRESHOLD = 60; // >= 60% of providers offer it
 const MODERATE_THRESHOLD = 35; // >= 35% of providers offer it, else "limited"
 
-const getProviderCardStatsFromDB = async () => {
+const getDashboardStatsFromDB = async () => {
   const providers = await InsuranceProvider.find().lean();
   const totalProviders = providers.length;
 
@@ -317,6 +318,10 @@ const getDomainStats = async () => {
   };
 };
 
+const getAllProvidersForAdmin = async () => {
+  return await InsuranceProvider.find().sort({ createdAt: -1 });
+};
+
 export const InsuranceService = {
   getAllProviders,
   getProviderById,
@@ -324,6 +329,7 @@ export const InsuranceService = {
   updateProvider,
   deleteProvider,
   getAIRecommendation,
-  getProviderCardStatsFromDB,
+  getDashboardStatsFromDB,
   getDomainStats,
+  getAllProvidersForAdmin,
 };

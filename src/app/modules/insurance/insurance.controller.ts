@@ -64,8 +64,8 @@ const getAIRecommendation = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getProviderCardStats = catchAsync(async (req: Request, res: Response) => {
-  const data = await InsuranceService.getProviderCardStatsFromDB();
+const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
+  const data = await InsuranceService.getDashboardStatsFromDB();
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -84,6 +84,16 @@ const getDomainStats = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getProvidersForAdmin = catchAsync(async (req: Request, res: Response) => {
+  const data = await InsuranceService.getAllProvidersForAdmin();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Providers fetched',
+    data,
+  });
+});
+
 export const InsuranceController = {
   getAllProviders,
   getProviderById,
@@ -91,7 +101,7 @@ export const InsuranceController = {
   updateProvider,
   deleteProvider,
   getAIRecommendation,
-  // getDashboardStats,
-  getProviderCardStats,
+  getProvidersForAdmin,
+  getDashboardStats,
   getDomainStats,
 };

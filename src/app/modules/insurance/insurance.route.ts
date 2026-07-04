@@ -12,7 +12,13 @@ router.get('/stats', auth(USER_ROLE.ADMIN), InsuranceController.getDomainStats);
 router.get(
   '/stats/dashboard',
   auth(USER_ROLE.ADMIN),
-  InsuranceController.getProviderCardStats,
+  InsuranceController.getDashboardStats,
+);
+
+router.get(
+  '/admin',
+  auth(USER_ROLE.ADMIN),
+  InsuranceController.getProvidersForAdmin,
 );
 
 //   Provider routes
