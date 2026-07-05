@@ -39,6 +39,19 @@ const userSchema = new Schema<TUser, UserModel>(
       enum: Object.values(USER_ROLE),
       default: 'USER',
     },
+    emirate: {
+      type: String,
+      enum: [
+        'dubai',
+        'abu-dhabi',
+        'sharjah',
+        'ajman',
+        'ras-al-khaimah',
+        'fujairah',
+        'umm-al-quwain',
+      ],
+      required: false,
+    },
     profilePhoto: {
       type: String,
       required: false,

@@ -20,4 +20,4 @@ export const COVERAGE_TYPES = [
   'hospitalization',
 ] as const;
 
-export const PET_TYPES = ['dog', 'cat', 'bird', 'rabbit', 'other'] as const;
+export const PET_TYPES = ['dog', 'cat', 'bird', 'rabbit','fish','reptile', 'other'] as const;

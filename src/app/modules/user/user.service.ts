@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
 import { User } from './user.model';
 import AppError from '../../errors/AppError';
 import { TUser } from './user.interface';
 import mongoose from 'mongoose';
+import { Pet } from '../pets/pets.model';
 
 const getUserFromDB = async (id: string) => {
   const result = await User.findById(id).select('-password');
@@ -164,6 +166,115 @@ const getMostFollowedAuthorsFromDB = async () => {
   return authors;
 };
 
+const getUsersByEmirate = async () => {
+  const grouped = await User.aggregate([
+    { $match: { emirate: { $exists: true } } },
+    { $group: { _id: '$emirate', count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+  ]);
+  return grouped.map((g) => ({ emirate: g._id, count: g.count }));
+};
+
+const getSingleUserForAdminFromDB = async (id: string) => {
+  const user = await User.findById(id).select('-password');
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  return user;
+};
+
+const getUserDashboardStatsFromDB = async () => {
+  const totalUsers = await User.countDocuments();
+
+  const startOfWeek = new Date();
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  const newThisWeek = await User.countDocuments({
+    createdAt: { $gte: startOfWeek },
+  });
+
+  const petOwnerIds: any[] = await Pet.distinct('owner', { isDeleted: false });
+  const usersWithPetCount = petOwnerIds.length;
+  const totalPets = await Pet.countDocuments({ isDeleted: false });
+
+  const percentWithPet = totalUsers
+    ? Math.round((usersWithPetCount / totalUsers) * 100)
+    : 0;
+  const avgPetsPerUser = usersWithPetCount
+    ? Math.round((totalPets / usersWithPetCount) * 10) / 10
+    : 0;
+
+  const emirateCounts = await getUsersByEmirate();
+  const topEmirate = emirateCounts[0] || null;
+
+  const usersWithoutPet = totalUsers - usersWithPetCount;
+
+  return {
+    totalUsers,
+    newThisWeek,
+    percentWithPet,
+    avgPetsPerUser,
+    topEmirate,
+    usersWithoutPet,
+  };
+};
+
+const getUserStatsFromDB = async () => {
+  const totalUsers = await User.countDocuments();
+
+  const eightWeeksAgo = new Date();
+  eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 8 * 7);
+  const weeklySignups = await User.aggregate([
+    { $match: { createdAt: { $gte: eightWeeksAgo } } },
+    {
+      $group: {
+        _id: { $dateTrunc: { date: '$createdAt', unit: 'week' } },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const petOwnerIds: any[] = await Pet.distinct('owner', { isDeleted: false });
+  const usersWithPetCount = petOwnerIds.length;
+  const percentWithPet = totalUsers
+    ? Math.round((usersWithPetCount / totalUsers) * 100)
+    : 0;
+
+  const usersWithArticle = await User.countDocuments({
+    'articles.0': { $exists: true },
+  });
+  const percentWithArticle = totalUsers
+    ? Math.round((usersWithArticle / totalUsers) * 100)
+    : 0;
+
+  const articleAuthorIds = (
+    await User.find({ 'articles.0': { $exists: true } })
+      .select('_id')
+      .lean()
+  ).map((u) => u._id.toString());
+  const petOwnerIdStrings = petOwnerIds.map((id) => id.toString());
+  const engagedUserIds = new Set([...articleAuthorIds, ...petOwnerIdStrings]);
+  const neverEngagedCount = totalUsers - engagedUserIds.size;
+  const percentNeverEngaged = totalUsers
+    ? Math.round((neverEngagedCount / totalUsers) * 100)
+    : 0;
+
+  const usersByEmirate = await getUsersByEmirate();
+
+  return {
+    totalUsers,
+    percentWithPet,
+    userGrowth: weeklySignups.map((w) => ({ week: w._id, count: w.count })),
+    engagement: {
+      addedPet: percentWithPet,
+      postedArticle: percentWithArticle,
+      neverEngaged: percentNeverEngaged,
+    },
+    usersByEmirate,
+  };
+};
+
 export const UserServices = {
   getUserFromDB,
   getFriendFromDB,
@@ -173,4 +284,8 @@ export const UserServices = {
   updateUserRoleInDB,
   followUserIntoDB,
   getMostFollowedAuthorsFromDB,
+
+  getSingleUserForAdminFromDB,
+  getUserDashboardStatsFromDB,
+  getUserStatsFromDB,
 };

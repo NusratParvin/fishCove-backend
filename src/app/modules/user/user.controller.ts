@@ -110,6 +110,38 @@ const getMostFollowedAuthors = catchAsync(async (req, res) => {
   });
 });
 
+const getSingleUserForAdmin = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const user = await UserServices.getSingleUserForAdminFromDB(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User fetched successfully',
+    data: user,
+  });
+});
+
+const getUserDashboardStats = catchAsync(async (req, res) => {
+  const data = await UserServices.getUserDashboardStatsFromDB();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User dashboard stats fetched',
+    data,
+  });
+});
+
+const getUserStats = catchAsync(async (req, res) => {
+  const data = await UserServices.getUserStatsFromDB();
+  console.log(data);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User domain stats fetched',
+    data,
+  });
+});
+
 export const UserControllers = {
   getUser,
   getFriend,
@@ -119,4 +151,9 @@ export const UserControllers = {
   updateUserRole,
   followUser,
   getMostFollowedAuthors,
+
+  getSingleUserForAdmin,
+
+  getUserDashboardStats,
+  getUserStats,
 };

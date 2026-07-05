@@ -2,6 +2,14 @@ import { Model, Types } from 'mongoose';
 import { USER_ROLE } from './user.constants';
 
 export type TUserRole = keyof typeof USER_ROLE;
+export type TEmirate =
+  | 'dubai'
+  | 'abu-dhabi'
+  | 'sharjah'
+  | 'ajman'
+  | 'ras-al-khaimah'
+  | 'fujairah'
+  | 'umm-al-quwain';
 
 export type TUser = {
   _id: string;
@@ -13,6 +21,8 @@ export type TUser = {
   address?: string;
   role: TUserRole;
   profilePhoto?: string;
+  emirate?: TEmirate;
+
   terms?: boolean;
   followers: string[];
   following: string[];
