@@ -15,6 +15,7 @@ import { InsuranceReviewRoutes } from '../modules/insuranceReview/insuranceRevie
 import { InsuranceRoutes } from '../modules/insurance/insurance.route';
 import { LostFoundRoutes } from '../modules/lostFound/lostFound.route';
 import { NotificationRoutes } from '../modules/notification/notification.route';
+import { PostRoutes } from '../modules/posts/posts.route';
 
 const router = Router();
 
@@ -35,6 +36,7 @@ const moduleRoutes = [
   { path: '/insurance-review', route: InsuranceReviewRoutes },
   { path: '/lost-found', route: LostFoundRoutes },
   { path: '/notifications', route: NotificationRoutes },
+  { path: '/posts', route: PostRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
