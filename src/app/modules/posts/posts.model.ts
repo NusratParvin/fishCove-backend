@@ -32,9 +32,6 @@ const postSchema = new Schema<TPost>(
       default: [],
     },
 
-    // Polymorphic share reference: refType tells Mongoose which collection
-    // to populate refId from at query time. Same trick you used for
-    // Comments (targetType/targetId), just named for this context.
     refId: {
       type: Schema.Types.ObjectId,
       refPath: 'refType',

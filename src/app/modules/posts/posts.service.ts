@@ -4,12 +4,17 @@ import AppError from '../../errors/AppError';
 import { Post } from './posts.model';
 import { Article } from '../articles/articles.model';
 import { TPost, TShareRefType } from './posts.interface';
+import { ReactionServices } from '../reactions/reactions.service';
+import { REACTION_TYPE } from '../reactions/reactions.interface';
+const createPostIntoDB = async (payload: Partial<TPost>, userId: string) => {
+  // figure out the type based on what was uploaded
+  let type = 'text';
+  if (payload.media && payload.media.length > 0) {
+    type = payload.media[0].type === 'video' ? 'video' : 'photo';
+  }
 
-const createPostIntoDB = async (
-  payload: Partial<TPost>,
-  userId: string,
-) => {
-  const postData = { ...payload, authorId: userId };
+  const postData = { ...payload, authorId: userId, type };
+
   const post = await Post.create(postData);
   return post;
 };
@@ -30,10 +35,15 @@ const createShareIntoDB = async (
   try {
     session.startTransaction();
 
-    // Confirm the thing being shared actually exists before we let anyone
-    // share it — avoids orphaned refIds in the feed.
-    const OriginalModel = refType === 'Article' ? Article : Post;
-    const original = await OriginalModel.findById(refId).session(session);
+    // Instead of one variable that could be either model, just handle
+    // each case separately — simpler for TypeScript AND easier to read.
+    let original;
+    if (refType === 'Article') {
+      original = await Article.findById(refId).session(session);
+    } else {
+      original = await Post.findById(refId).session(session);
+    }
+
     if (!original) {
       throw new AppError(httpStatus.NOT_FOUND, `${refType} not found`);
     }
@@ -51,11 +61,19 @@ const createShareIntoDB = async (
       { session },
     );
 
-    await OriginalModel.findByIdAndUpdate(
-      refId,
-      { $inc: { shareCount: 1 } },
-      { session },
-    );
+    if (refType === 'Article') {
+      await Article.findByIdAndUpdate(
+        refId,
+        { $inc: { shareCount: 1 } },
+        { session },
+      );
+    } else {
+      await Post.findByIdAndUpdate(
+        refId,
+        { $inc: { shareCount: 1 } },
+        { session },
+      );
+    }
 
     await session.commitTransaction();
     return sharePost[0];
@@ -71,7 +89,7 @@ const createShareIntoDB = async (
 // refId is populated dynamically via refPath, so a shared_article post
 // comes back with the full Article embedded, no extra query needed on
 // the frontend.
-const getFeedFromDB = async (page = 1, limit = 15) => {
+const getFeedFromDB = async (page = 1, limit = 15, userId: string) => {
   const skip = (page - 1) * limit;
 
   const posts = await Post.find({ isDeleted: false })
@@ -106,7 +124,10 @@ const updatePostIntoDB = async (
     throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
   }
   if (post.authorId.toString() !== userId) {
-    throw new AppError(httpStatus.FORBIDDEN, 'You can only edit your own posts');
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You can only edit your own posts',
+    );
   }
 
   const updated = await Post.findByIdAndUpdate(postId, updateData, {
@@ -123,7 +144,10 @@ const deletePostFromDB = async (postId: string, userId: string) => {
     throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
   }
   if (post.authorId.toString() !== userId) {
-    throw new AppError(httpStatus.FORBIDDEN, 'You can only delete your own posts');
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You can only delete your own posts',
+    );
   }
 
   const deleted = await Post.findByIdAndUpdate(
@@ -135,6 +159,21 @@ const deletePostFromDB = async (postId: string, userId: string) => {
   return deleted;
 };
 
+const reactToPostIntoDB = async (
+  postId: string,
+  userId: string,
+  reactionType: REACTION_TYPE,
+) => {
+  return ReactionServices.toggleReactionInDB(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Post as any, // ← add as any
+    'Post',
+    postId,
+    userId,
+    reactionType,
+  );
+};
+
 export const PostServices = {
   createPostIntoDB,
   createShareIntoDB,
@@ -142,4 +181,5 @@ export const PostServices = {
   getUserPostsFromDB,
   updatePostIntoDB,
   deletePostFromDB,
+  reactToPostIntoDB,
 };

@@ -1,10 +1,8 @@
 import { z } from 'zod';
+import { REACTION_TYPE } from '../reactions/reactions.interface';
 
-// For regular posts: photo, video, or milestone.
-// Requires at least a caption OR media — an empty post makes no sense.
 export const createPostValidationSchema = z.object({
   petId: z.string().optional(),
-  type: z.enum(['photo', 'video', 'milestone']),
   caption: z.string().optional(),
   media: z
     .array(
@@ -14,19 +12,24 @@ export const createPostValidationSchema = z.object({
       }),
     )
     .optional(),
+  isMilestone: z.boolean().optional(),
+  milestoneCategory: z
+    .enum(['adoption', 'birthday', 'vet-visit', 'health', 'other'])
+    .optional(),
 });
 
-// For sharing an existing Article or Post into the feed.
-// The controller derives type ('shared_article' | 'shared_post') from refType,
-// so the client only ever sends refType + refId, not the derived type.
 export const createShareValidationSchema = z.object({
   refId: z.string().nonempty({ message: 'refId is required' }),
   refType: z.enum(['Article', 'Post'], {
     required_error: 'refType must be either "Article" or "Post"',
   }),
-  caption: z.string().optional(), // optional "quote" text added when sharing
+  caption: z.string().optional(),
 });
 
 export const updatePostValidationSchema = z.object({
   caption: z.string().optional(),
+});
+
+export const reactToPostValidationSchema = z.object({
+  reactionType: z.nativeEnum(REACTION_TYPE),
 });

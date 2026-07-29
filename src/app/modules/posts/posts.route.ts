@@ -5,6 +5,7 @@ import {
   createPostValidationSchema,
   createShareValidationSchema,
   updatePostValidationSchema,
+  reactToPostValidationSchema,
 } from './posts.validate';
 import { PostControllers } from './posts.controller';
 import auth from '../../middlewares/auth';
@@ -50,6 +51,13 @@ router.delete(
   '/:id',
   auth(USER_ROLE.USER, USER_ROLE.ADMIN),
   PostControllers.deletePost,
+);
+
+router.post(
+  '/:id/react',
+  auth(USER_ROLE.USER, USER_ROLE.ADMIN),
+  zodValidationRequest(reactToPostValidationSchema),
+  PostControllers.reactToPost,
 );
 
 export const PostRoutes = router;

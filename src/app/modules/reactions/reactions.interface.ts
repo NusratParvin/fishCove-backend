@@ -8,13 +8,16 @@ export enum REACTION_TYPE {
   SAD = 'sad',
   ANGRY = 'angry',
 }
+
 export type TReactionSummary = {
   [key in REACTION_TYPE]: number;
 };
 
+export type TTargetType = 'Article' | 'Post';
+
 export type TReaction = {
-  articleId: Types.ObjectId;
+  targetType: TTargetType;
+  targetId: Types.ObjectId;
   userId: Types.ObjectId;
   reactionType: REACTION_TYPE;
-  reactedAt: Date;
 };

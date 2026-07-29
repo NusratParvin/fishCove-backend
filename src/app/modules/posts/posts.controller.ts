@@ -5,15 +5,16 @@ import { PostServices } from './posts.service';
 
 const createPost = catchAsync(async (req, res) => {
   const authorId = req.user.id;
-  console.log(req.body);
-  // const result = await PostServices.createPostIntoDB(req.body, authorId);
+  // console.log(req.body);
+  const result = await PostServices.createPostIntoDB(req.body, authorId);
+  console.log(result);
 
-  // sendResponse(res, {
-  //   statusCode: httpStatus.OK,
-  //   success: true,
-  //   message: 'Post created successfully',
-  //   data: result,
-  // });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Post created successfully',
+    data: result,
+  });
 });
 
 const sharePost = catchAsync(async (req, res) => {
@@ -37,11 +38,11 @@ const sharePost = catchAsync(async (req, res) => {
 
 // Home feed — supports ?page=&limit= for infinite scroll
 const getFeed = catchAsync(async (req, res) => {
+  const userId = req.user.id;
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 15;
 
-  const result = await PostServices.getFeedFromDB(page, limit);
-
+  const result = await PostServices.getFeedFromDB(page, limit, userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -89,6 +90,20 @@ const deletePost = catchAsync(async (req, res) => {
   });
 });
 
+const reactToPost = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  const { reactionType } = req.body;
+  const result = await PostServices.reactToPostIntoDB(id, userId, reactionType);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Reaction updated successfully',
+    data: result,
+  });
+});
+
 export const PostControllers = {
   createPost,
   sharePost,
@@ -96,4 +111,5 @@ export const PostControllers = {
   getUserPosts,
   updatePost,
   deletePost,
+  reactToPost,
 };
