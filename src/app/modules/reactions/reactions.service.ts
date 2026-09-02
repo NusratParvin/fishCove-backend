@@ -16,6 +16,7 @@ const getAllReactionsFromDB = async () => {
 // (Post, Article, ...). Caller passes its own Model to avoid a circular
 // import between reactions <-> posts <-> articles.
 const toggleReactionInDB = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   TargetModel: Model<any>,
   targetType: TTargetType,
   targetId: string,

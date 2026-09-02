@@ -6,6 +6,7 @@ export type TPostType =
   | 'video'
   | 'milestone'
   | 'shared_article'
+  | 'text'
   | 'shared_post';
 
 // The two content types a Post can point back to when it's a share.

@@ -15,7 +15,14 @@ const postSchema = new Schema<TPost>(
     },
     type: {
       type: String,
-      enum: ['photo', 'video', 'milestone', 'shared_article', 'shared_post'],
+      enum: [
+        'photo',
+        'video',
+        'milestone',
+        'shared_article',
+        'shared_post',
+        'text',
+      ],
       required: true,
     },
     caption: {

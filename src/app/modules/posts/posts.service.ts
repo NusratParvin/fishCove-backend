@@ -6,6 +6,7 @@ import { Article } from '../articles/articles.model';
 import { TPost, TShareRefType } from './posts.interface';
 import { ReactionServices } from '../reactions/reactions.service';
 import { REACTION_TYPE } from '../reactions/reactions.interface';
+
 const createPostIntoDB = async (payload: Partial<TPost>, userId: string) => {
   // figure out the type based on what was uploaded
   let type = 'text';
@@ -89,17 +90,18 @@ const createShareIntoDB = async (
 // refId is populated dynamically via refPath, so a shared_article post
 // comes back with the full Article embedded, no extra query needed on
 // the frontend.
-const getFeedFromDB = async (page = 1, limit = 15, userId: string) => {
+const getFeedFromDB = async (page = 1, limit = 15) => {
   const skip = (page - 1) * limit;
 
-  const posts = await Post.find({ isDeleted: false })
-    .populate({ path: 'authorId', select: 'name profilePhoto' })
-    .populate({ path: 'petId', select: 'name species profilePhoto' })
-    .populate({ path: 'refId' }) // resolves to Article or Post per refType
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+  const posts = await Post.find({ isDeleted: false });
+  // .populate({ path: 'authorId', select: 'name profilePhoto' })
+  // .populate({ path: 'petId', select: 'name species profilePhoto' })
+  // .populate({ path: 'refId' }) // resolves to Article or Post per refType
+  // .sort({ createdAt: -1 })
+  // .skip(skip)
+  // .limit(limit);
 
+  console.log(posts, 'posts---->');
   return posts;
 };
 
